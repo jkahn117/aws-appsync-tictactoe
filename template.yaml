@@ -1,0 +1,80 @@
+# aws cloudformation package --template-file template.yaml \
+#         --s3-bucket jkahn-tictactoe \
+#         --output-template-file packaged.yaml
+#         
+# aws cloudformation deploy --template-file packaged.yaml \
+#         --stack-name jkahn-tictactoe \
+#         --capabilities CAPABILITY_IAM
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Transform: 'AWS::Serverless-2016-10-31'
+
+Description: AWS AppSync TicTacToe
+
+Resources:
+  GameLookupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: index.handler
+      Runtime: nodejs6.10
+      Description: 'Retrieve games associated with a given user and status'
+      Role: !GetAtt GameLookupRole.Arn
+      Environment:
+        Variables:
+          GAMES_TABLE: 'TicTacToe_GamesTable'
+
+  # should add dynamodb table in here at some point
+  
+  #
+  # ---------- IAM ----------
+  #
+  GameLookupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/TicTacToe/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: AllowLambdaServiceToAssumeRole
+            Effect: Allow
+            Action: 
+              - sts:AssumeRole
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+
+  GameLookupPolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: GameLookupRole
+    Properties:
+      PolicyName: TicTacToeGameLookupPolicy
+      Roles:
+        - !Ref GameLookupRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          -
+            Effect:   Allow
+            Resource:
+              - arn:aws:dynamodb:us-west-2:487757292854:table/TicTacToe_GamesTable
+              - arn:aws:dynamodb:us-west-2:487757292854:table/TicTacToe_GamesTable/*
+            Action:
+              - "dynamodb:Query"
+
+
+  #
+  # ---------- Permission ----------
+  # Need to manually create Lambda permission for AppSync to invoke the function
+  #
+  AppSyncInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt GameLookupFunction.Arn
+      Principal: appsync.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"

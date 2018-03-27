@@ -1,0 +1,14 @@
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key": {
+        "GameId": { "S" : "${context.arguments.GameId}"}
+    },
+    "attributeValues" : {
+		"Game": {  "S": "${util.autoId(context.arguments.Game)}" }
+    }
+}
+
+
+
+$util.toJson($context.result)

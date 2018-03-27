@@ -1,0 +1,22 @@
+Request
+
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key": {
+        "GameId": { "S" : "${util.autoId()}"}
+    },
+    "attributeValues" : {
+		"HostId": {  "S": "${context.arguments.HostId}" },
+		"StatusDate": {  "S": "PENDING_$util.time.nowFormatted("yyyy-MM-dd HH:mm:ssZ")" },
+		"OpponentId": {  "S": "${context.arguments.OpponentId}" },
+		"OPlayer": {  "S": "${context.arguments.HostId}" },
+		"Turn": {  "S": "${context.arguments.OpponentId}" },
+        "StartDate": { "S": "${util.time.nowEpochSeconds()}" }
+    }
+}
+
+
+Response
+
+$utils.toJson($context.result)

@@ -1,0 +1,29 @@
+{
+    "version" : "2017-02-28",
+    "operation" : "Query",
+    "query" : {
+        ## Provide a query expression. **
+        "expression": "OpponentId = :username and begins_with(StatusDate, :state)",
+        "expressionValues" : {
+            ":username" : {
+                "S" : "${context.arguments.username}"
+            },
+            ":state": {
+                "S": "PENDING"
+            }
+        }
+    },
+    ## Provide a secondary index name or remove the next line to query the table directly. **
+    "index": "OpponentId-StatusDate-index",
+    ## Add 'limit' and 'nextToken' arguments to this field in your schema to implement pagination. **
+    "limit": #if(${context.arguments.limit}) ${context.arguments.limit} #else 20 #end,
+    "nextToken": #if(${context.arguments.nextToken}) "${context.arguments.nextToken}" #else null #end
+}
+
+
+
+
+{
+    "games": $util.toJson($context.result.items),
+    "nextToken": #if(${context.result.nextToken}) "${context.result.nextToken}" #else null #end
+}

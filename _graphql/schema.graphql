@@ -19,18 +19,7 @@ type Mutation {
 	# Create a new game
 	createGame(HostId: String!, OpponentId: String!): Game
 	# Update the state of game play
-	updateGame(GameId: ID!, Game: [String]!): Game
-	# Put a single value of type 'Game'.
-	######## If an item exists it's updated. If it does not it's created.
-	putGame(
-		GameId: ID!,
-		HostId: String!,
-		StatusDate: String!,
-		OpponentId: String!,
-		OPlayer: String!,
-		Turn: String!,
-		Game: String
-	): Game
+	updateGame(GameId: ID!, Game: [String]!, Turn: String!): Game
 	# Delete a single value of type 'Game' by a primary key.
 	deleteGame(GameId: ID!): Game
 }
@@ -40,8 +29,13 @@ type Player {
 	Username: String!
 }
 
+type PlayerConnection {
+	players: [Player]
+	nextToken: String
+}
+
 type Query {
-	allPlayers: [Player]
+	allPlayers(nextToken: String): PlayerConnection
 	invites(username: String!, count: Int, nextToken: String): GameConnection
 	inProgress(username: String!, count: Int, nextToken: String): GameConnection
 	finished(username: String!, count: Int, nextToken: String): GameConnection
@@ -52,6 +46,8 @@ type Query {
 type Subscription {
 	onInvited(OpponentId: String!): Game
 		@aws_subscribe(mutations: ["createGame"])
+	onGameUpdated(GameId: ID!): Game
+		@aws_subscribe(mutations: ["updateGame"])
 }
 
 schema {

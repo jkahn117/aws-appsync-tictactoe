@@ -4,12 +4,13 @@
       <thead>
         <tr>
           <th class="has-text-weight-light">Opponent</th>
-          <th class="has-text-weight-light">Winner</th>
+          <th class="has-text-weight-light">Finished</th>
+          <th class="has-text-weight-light">Result</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="game in finished.games" :key="game.GameId">
+        <tr v-for="game in games" :key="game.GameId">
           <td>
             {{ opponentName(game) }}
           </td>
@@ -17,7 +18,10 @@
             {{ game.UpdateDate | since }}
           </td>
           <td>
-
+            <span class="tag is-success is-rounded">WIN</span>
+          </td>
+          <td>
+            <a class="button is-uppercase is-small is-light">View</a>
           </td>
         </tr>
       </tbody>
@@ -27,6 +31,7 @@
 
 <script>
 import { ListCompletedQuery } from '@/api/queries'
+import { mapActions, mapGetters } from 'vuex'
 import moment from 'moment'
 
 export default {
@@ -34,7 +39,7 @@ export default {
 
   data () {
     return {
-      finished: {}
+      games: []
     }
   },
 
@@ -44,22 +49,41 @@ export default {
     }
   },
 
+  computed: {
+    ...mapGetters({
+      'username': 'currentUsername'
+    }),
+
+    completeCount: function () {
+      return this.games.length
+    }
+  },
+
+  watch: {
+    completeCount: function (val) {
+      this.setCompleteGameCount(val)
+    }
+  },
+
   methods: {
+    ...mapActions([
+      'setCompleteGameCount'
+    ]),
+
     opponentName: function (game) {
-      // TODO: update with actual player ID
-      return game.HostId === 'josh' ? game.OpponentId : game.HostId
+      return game.HostId === this.username ? game.OpponentId : game.HostId
     }
   },
 
   apollo: {
-    finished: {
+    games: {
       query: ListCompletedQuery,
       variables () {
-        // TODO: update with actual player ID
         return {
-          username: 'josh'
+          username: this.username
         }
-      }
+      },
+      update: data => data.finished.games
     }
   }
 }

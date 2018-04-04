@@ -2,38 +2,27 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import auth from './modules/auth'
-import * as types from './mutation-types'
+import game from './modules/game'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   modules: {
-    auth
+    auth,
+    game
   },
 
   state: {
-    isHydrated: false,
-    gameId: null
+    isHydrated: false
   },
 
   getters: {
-    isHydrated: state => state.isHydrated,
-    currentGameId: state => state.gameId
-  },
-
-  actions: {
-    setCurrentGame ({ commit }, gameId) {
-      commit(types.GAME_CHANGE, gameId)
-    }
+    isHydrated: state => state.isHydrated
   },
 
   mutations: {
     APPSYNC_HYDRATED (state) {
       state.isHydrated = true
-    },
-
-    [types.GAME_CHANGE] (state, gameId) {
-      state.gameId = gameId
     }
   }
 })

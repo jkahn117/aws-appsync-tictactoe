@@ -1,7 +1,5 @@
 <template>
   <div>
-    <p class="is-uppercase has-text-weight-light">In Progress</p>
-
     <table class="table is-striped is-fullwidth">
       <thead>
         <tr>
@@ -34,8 +32,7 @@
 
 <script>
 import { ListInProgressQuery } from '@/api/queries'
-// import { OnInvitedSubscription } from '@/api/subscriptions'
-import Store from '@/store'
+import { mapActions, mapGetters } from 'vuex'
 import moment from 'moment'
 
 export default {
@@ -54,17 +51,38 @@ export default {
     }
   },
 
+  computed: {
+    ...mapGetters({
+      'username': 'currentUsername'
+    }),
+
+    activeCount: function () {
+      return this.games.length
+    }
+  },
+
+  watch: {
+    activeCount: function (val) {
+      this.setActiveGameCount(val)
+    }
+  },
+
   methods: {
+    ...mapActions([
+      'setCurrentGame',
+      'setActiveGameCount'
+    ]),
+
     opponentName: function (game) {
-      return game.HostId === 'josh' ? game.OpponentId : game.HostId
+      return game.HostId === this.username ? game.OpponentId : game.HostId
     },
 
     isMyTurn: function (game) {
-      return game.Turn === 'josh'
+      return game.Turn === this.username
     },
 
     navigateToGame: function (gameId) {
-      Store.dispatch('setCurrentGame', gameId)
+      this.setCurrentGame(gameId)
     }
   },
 
@@ -72,35 +90,11 @@ export default {
     games: {
       query: ListInProgressQuery,
       variables () {
-        // TODO: update with actual player ID
         return {
-          username: 'josh'
+          username: this.username
         }
       },
       update: data => data.inProgress.games
-      // subscribeToMore: {
-      //   document: OnInvitedSubscription,
-      //   variables: {
-      //     username: 'josh'
-      //   },
-      //   updateQuery: (prev, { subscriptionData }) => {
-      //     let newData = subscriptionData.data.onInvited
-      //     newData.New = true
-
-      //     console.log(newData)
-
-      //     return {
-      //       invites: {
-      //         __typename: 'GameConnection',
-      //         nextToken: prev.nextToken || '',
-      //         games: [
-      //           newData,
-      //           ...prev.invites.games
-      //         ]
-      //       }
-      //     } // end return
-      //   }
-      // }
     }
   }
 }

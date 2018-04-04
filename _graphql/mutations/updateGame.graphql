@@ -1,11 +1,17 @@
 {
     "version" : "2017-02-28",
-    "operation" : "PutItem",
+    "operation" : "UpdateItem",
     "key": {
         "GameId": { "S" : "${context.arguments.GameId}"}
     },
-    "attributeValues" : {
-		"Game": {  "S": "${util.autoId(context.arguments.Game)}" }
+    "update" : {
+    	"expression": "SET Game = :Game, Turn = :Turn",
+        "expressionValues": {
+        	#set( $Game = $context.arguments.Game )
+        	":Game": $util.dynamodb.toListJson($Game),
+            #set( $Turn = $context.arguments.Turn )
+            ":Turn": $util.dynamodb.toStringJson($Turn)
+        }
     }
 }
 

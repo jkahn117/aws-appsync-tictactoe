@@ -9,7 +9,8 @@ const util = require('util')
 
 GAMES_TABLE = process.env.GAMES_TABLE
 
-const getGamesWithStatus = (username, status) => {
+
+const getGamesWithStatus = async (username, status) => {
   let hostParams = {
     TableName: GAMES_TABLE,
     IndexName: 'HostId-StatusDate-index',
@@ -31,22 +32,27 @@ const getGamesWithStatus = (username, status) => {
     },
     Limit: 10
   }
+  
+  let results = await Promise.all([
+      client.query(hostParams).promise(), 
+      client.query(opponentParams).promise()
+    ])
 
-  return Promise.all([client.query(hostParams).promise(), client.query(opponentParams).promise()])
-    .then(values => {
-      return Promise.resolve([ ...values[0].Items, ...values[1].Items ])
-    })
+  return [ ...results[0].Items, ...results[1].Items ]
 }
 
 
-exports.handler = (event, context, callback) => {
+exports.handler = async (event) => {
   console.log(util.inspect(event, { depth: 5 }))
 
-  getGamesWithStatus(event.username, event.status)
-    .then(result => {
-      callback(null, result)
-    })
-    .catch(error => {
-      callback(error)
-    })
+  let data = []
+  
+  try {
+    data = await getGamesWithStatus(event.username, event.status)
+  } catch (error) {
+    console.error(error)
+    return error
+  }
+
+  return data
 }

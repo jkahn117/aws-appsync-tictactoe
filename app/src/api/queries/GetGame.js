@@ -5,6 +5,7 @@ const GetGameQuery = gql`
     getGame(GameId: $gameId) {
       GameId
       HostId
+      OpponentId
       OPlayer
       Turn
       Game

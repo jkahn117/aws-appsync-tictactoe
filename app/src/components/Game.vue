@@ -1,6 +1,11 @@
 <template>
   <div>
-    <div v-if="$apollo.loading">Loading...</div>
+    <p class="title is-3">
+      My Game
+      <span v-if="this.gameDetails.hasOwnProperty('Game')">vs {{ this.opponentName }}</span>
+    </p>
+
+    <!-- <div v-if="$apollo.loading">Loading...</div> -->
     <table id="board" v-if="!!this.gameDetails">
       <tr>
         <td :class="this.game[0]" v-on:click="chooseSpace(0)"></td>
@@ -18,14 +23,13 @@
         <td :class="this.game[8]" v-on:click="chooseSpace(8)"></td>
       </tr>
     </table>
-
-    {{ this.gameId }}
   </div>
 </template>
 
 <script>
 import { GetGameQuery } from '@/api/queries'
 import { UpdateGameMutation } from '@/api/mutations'
+import { OnGameUpdatedSubscription } from '@/api/subscriptions'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -39,7 +43,8 @@ export default {
 
   computed: {
     ...mapGetters({
-      gameId: 'currentGameId'
+      gameId: 'currentGameId',
+      username: 'currentUsername'
     }),
 
     game: function () {
@@ -51,8 +56,11 @@ export default {
     },
 
     myMark: function () {
-      // TODO: update with actual player ID
-      return this.gameDetails.OPlayer === 'josh' ? 'O' : 'X'
+      return this.gameDetails.OPlayer === this.username ? 'O' : 'X'
+    },
+
+    opponentName: function () {
+      return this.gameDetails.HostId === this.username ? this.gameDetails.OpponentId : this.gameDetails.HostId
     }
   },
 
@@ -82,19 +90,19 @@ export default {
       let updatedGame = Array.from(this.game)
       updatedGame[spaceIndex] = this.myMark
 
+      const newData = {
+        gameId: this.gameId,
+        game: updatedGame
+      }
+
       if (this.game[spaceIndex] !== 'X' || this.game[spaceIndex] !== 'O') {
         this.$apollo.mutate({
           mutation: UpdateGameMutation,
-          variables () {
-            return {
-              gameId: this.gameId,
-              game: updatedGame
-            }
-          },
+          variables: newData,
           update: (store, { data: { updateGame } }) => {
             const query = {
               query: GetGameQuery,
-              variables: { gameId: this.gameId }
+              variables: { gameId: updateGame.GameId }
             }
 
             const data = store.readQuery(query)
@@ -105,7 +113,7 @@ export default {
             __typename: 'Mutation',
             updateGame: {
               __typename: 'Game',
-              GameId: this.gameDetails.GameId,
+              GameId: this.gameId,
               Game: updatedGame
             }
           }
@@ -113,7 +121,6 @@ export default {
           console.log('update complete!')
           console.log(data)
         }).catch((error) => {
-          console.log('/////')
           console.error(error)
         })
       }
@@ -135,6 +142,24 @@ export default {
       update: data => data.getGame,
       skip () {
         return !this.gameId
+      },
+      subscribeToMore: {
+        document: OnGameUpdatedSubscription,
+        variables () {
+          return {
+            gameId: this.gameId
+          }
+        },
+        updateQuery: (prev, { subscriptionData }) => {
+          let newData = subscriptionData.data.onGameUpdated
+          let updatedGame = Object.assign({}, prev.getGame, newData)
+          return {
+            getGame: {
+              __typename: 'Game',
+              ...updatedGame
+            }
+          } // end return
+        }
       }
     }
   }

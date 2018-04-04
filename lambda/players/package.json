@@ -1,0 +1,12 @@
+{
+  "name": "aws-appysync-tictactoe-players",
+  "version": "1.0.0",
+  "description": "AWS AppSync TicTacToe - Lambda function to query for players",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.219.1",
+    "jmespath": "^0.15.0"
+  },
+  "author": "jkahn@",
+  "license": "Apache-2.0"
+}

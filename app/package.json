@@ -13,7 +13,7 @@
   "dependencies": {
     "aws-amplify": "^0.2.11",
     "aws-appsync": "^1.0.14",
-    "buefy": "^0.6.3",
+    "buefy": "^0.6.5",
     "graphql-tag": "^2.8.0",
     "moment": "^2.21.0",
     "vue": "^2.5.2",

@@ -9,7 +9,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="game in invites.games" :key="game.GameId">
+        <tr v-for="game in games" :key="game.GameId">
           <td>
             {{ game.HostId }}
             <span class="tag is-warning is-rounded" v-if="game.New">NEW</span>
@@ -30,6 +30,7 @@
 <script>
 import { ListInvitesQuery } from '@/api/queries'
 import { OnInvitedSubscription } from '@/api/subscriptions'
+import { mapActions, mapGetters } from 'vuex'
 import moment from 'moment'
 
 export default {
@@ -37,8 +38,24 @@ export default {
 
   data () {
     return {
-      invites: {},
+      games: [],
       subscriber: null
+    }
+  },
+
+  computed: {
+    ...mapGetters({
+      'username': 'currentUsername'
+    }),
+
+    inviteCount: function () {
+      return this.games.length
+    }
+  },
+
+  watch: {
+    inviteCount: function (val) {
+      this.setInvitedGameCount(val)
     }
   },
 
@@ -48,19 +65,27 @@ export default {
     }
   },
 
+  methods: {
+    ...mapActions([
+      'setInvitedGameCount'
+    ])
+  },
+
   apollo: {
-    invites: {
+    games: {
       query: ListInvitesQuery,
       variables () {
-        // TODO: update with actual player ID
         return {
-          username: 'josh'
+          username: this.username
         }
       },
+      update: data => data.invites.games,
       subscribeToMore: {
         document: OnInvitedSubscription,
-        variables: {
-          username: 'josh'
+        variables () {
+          return {
+            username: this.username
+          }
         },
         updateQuery: (prev, { subscriptionData }) => {
           let newData = subscriptionData.data.onInvited

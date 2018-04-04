@@ -1,5 +1,5 @@
 {
-  "name": "aws-appysync-tictactoe-merge",
+  "name": "aws-appysync-tictactoe-games",
   "version": "1.0.0",
   "description": "AWS AppSync TicTacToe - Lambda function to query for user games by status",
   "main": "index.js",

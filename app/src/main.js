@@ -9,6 +9,7 @@ import store from './store'
 import Buefy from 'buefy'
 import 'buefy/lib/buefy.css'
 import 'font-awesome/css/font-awesome.min.css'
+import './assets/app.css'
 
 // AWS AppSync configuration
 import AWSAppSyncClient from 'aws-appsync'

@@ -1,10 +1,10 @@
 <template>
-  <nav class="navbar is-light main">
+  <nav class="navbar is-white main">
     <div class="container">
       <div class="navbar-brand">
         <router-link to="/" class="navbar-item">
           <b-icon icon="trophy" size="is-medium"></b-icon>
-          <span>AWS AppSync TicTacToe</span>
+          <span class="title is-4">AWS AppSync TicTacToe</span>
         </router-link>
 
         <div class="navbar-burger burger">

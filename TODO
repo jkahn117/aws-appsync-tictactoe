@@ -1,0 +1,9 @@
+TODO
+----
+
+* move query for player's games to new menu component
+	* subscribe to onGameUpdate
+	* will need to look at the Game in the resulting data, determine type, and push into the correct array of games
+* in progress component
+	* subscribe to onGameStart
+

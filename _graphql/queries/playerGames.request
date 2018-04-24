@@ -1,0 +1,8 @@
+# DataSource = None / PlayerGamesLocal
+
+{
+    "version": "2017-02-28",
+    "payload": {
+        "PlayerId": "${ctx.arguments.PlayerId}"
+    }
+}

@@ -1,0 +1,9 @@
+# DataSource = DynamoDB / TicTacToe_GamesTable
+
+{
+    "version" : "2017-02-28",
+    "operation" : "DeleteItem",
+    "key" : {
+        "GameId" : { "S" : "${ctx.args.GameId}" }
+    }
+}

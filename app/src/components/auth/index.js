@@ -7,12 +7,12 @@ import AuthSignUp from './SignUp'
 import AuthConfirmSignup from './ConfirmSignUp'
 import AuthForgotPassword from './ForgotPassword'
 
-Vue.component('pet-store-auth-view', AuthLayout)
-Vue.component('pet-store-sign-in', AuthSignIn)
-Vue.component('pet-store-sign-out', AuthSignOut)
-Vue.component('pet-store-sign-up', AuthSignUp)
-Vue.component('pet-store-confirm-sign-up', AuthConfirmSignup)
-Vue.component('pet-store-forgot-password', AuthForgotPassword)
+Vue.component('tictactoe-auth-view', AuthLayout)
+Vue.component('tictactoe-sign-in', AuthSignIn)
+Vue.component('tictactoe-sign-out', AuthSignOut)
+Vue.component('tictactoe-sign-up', AuthSignUp)
+Vue.component('tictactoe-confirm-sign-up', AuthConfirmSignup)
+Vue.component('tictactoe-forgot-password', AuthForgotPassword)
 
 export {
   AuthLayout,

@@ -22,7 +22,16 @@
             {{ game.UpdateDate | since }}
           </td>
           <td>
-            <a class="button is-uppercase is-small is-primary" :disabled="!isMyTurn(game)" v-on:click="navigateToGame(game.GameId)">Play</a>
+            <a class="button is-uppercase is-small is-primary"
+                v-if="isMyTurn(game)"
+                v-on:click="navigateToGame(game.GameId)">
+              Play
+            </a>
+            <a class="button is-uppercase is-small is-light"
+                v-else
+                v-on:click="navigateToGame(game.GameId)">
+              View
+            </a>
           </td>
         </tr>
       </tbody>
@@ -31,48 +40,19 @@
 </template>
 
 <script>
-import { ListInProgressQuery } from '@/api/queries'
-import { mapActions, mapGetters } from 'vuex'
-import moment from 'moment'
+import BaseGames from './BaseGames'
 
 export default {
-  name: 'tictactoe-inprogress-games',
+  extends: BaseGames,
+  name: 'tictactoe-active-games',
 
   data () {
     return {
-      games: [],
-      subscriber: null
-    }
-  },
-
-  filters: {
-    since: function (timestamp) {
-      return moment(timestamp, 'X').fromNow()
-    }
-  },
-
-  computed: {
-    ...mapGetters({
-      'username': 'currentUsername'
-    }),
-
-    activeCount: function () {
-      return this.games.length
-    }
-  },
-
-  watch: {
-    activeCount: function (val) {
-      this.setActiveGameCount(val)
+      subscriptions: {}
     }
   },
 
   methods: {
-    ...mapActions([
-      'setCurrentGame',
-      'setActiveGameCount'
-    ]),
-
     opponentName: function (game) {
       return game.HostId === this.username ? game.OpponentId : game.HostId
     },
@@ -83,18 +63,6 @@ export default {
 
     navigateToGame: function (gameId) {
       this.setCurrentGame(gameId)
-    }
-  },
-
-  apollo: {
-    games: {
-      query: ListInProgressQuery,
-      variables () {
-        return {
-          username: this.username
-        }
-      },
-      update: data => data.inProgress.games
     }
   }
 }

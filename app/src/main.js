@@ -35,8 +35,9 @@ const appSyncClient = new AWSAppSyncClient({
   region: AWSAppSyncConfig.region,
   auth: {
     type: AWSAppSyncConfig.authenticationType,
-    apiKey: AWSAppSyncConfig.apiKey
-    // jwtToken: async () => (await Auth.currentSession()).getAccessToken().getJwtToken()
+    // apiKey: AWSAppSyncConfig.apiKey,
+    // changed getAccessToken to getIdToken per issue with username not being filled
+    jwtToken: async () => (await Auth.currentSession()).getAccessToken().getJwtToken()
   }
 }, {
   defaultOptions: {

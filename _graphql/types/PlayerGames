@@ -1,0 +1,55 @@
+type PlayerGames {
+	Invited: [Game]
+	Active: [Game]
+	Finished: [Game]
+}
+
+
+## Invited ## - DataSource = DynamoDB / TicTacToe_GamesTable
+
+{
+    "version" : "2017-02-28",
+    "operation" : "Query",
+    "query" : {
+        "expression": "OpponentId = :username and begins_with(StatusDate, :state)",
+        "expressionValues" : {
+            ":username" : { "S" : "${ctx.source.PlayerId}" },
+            ":state": { "S": "PENDING" }
+        }
+    },
+    "index": "OpponentId-StatusDate-index",
+    "limit": 10
+}
+
+
+Response -> $util.toJson($ctx.result.items)
+
+
+
+## Active ## -- DataSource = Lambda / GameLookupFunction
+
+{
+    "version" : "2017-02-28",
+    "operation": "Invoke",
+    "payload": {
+    	"username": "$ctx.source.PlayerId",
+        "status": "IN_PROGRESS"
+    }
+}
+
+Response -> $util.toJson($context.result)
+
+
+
+## Finished ## -- DataSource = Lambda / GameLookupFunction
+
+{
+    "version" : "2017-02-28",
+    "operation": "Invoke",
+    "payload": {
+    	"username": "$ctx.source.PlayerId",
+        "status": "FINISHED"
+    }
+}
+
+Response -> $util.toJson($context.result)

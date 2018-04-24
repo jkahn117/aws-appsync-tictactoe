@@ -16,14 +16,26 @@ Resources:
   GameLookupFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: lambda/
+      CodeUri: lambda/games/
       Handler: index.handler
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
       Description: 'Retrieve games associated with a given user and status'
       Role: !GetAtt GameLookupRole.Arn
       Environment:
         Variables:
           GAMES_TABLE: 'TicTacToe_GamesTable'
+
+  PlayerLookupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/players/
+      Handler: index.handler
+      Runtime: nodejs8.10
+      Description: 'Retrieve players available to play against'
+      Role: !GetAtt PlayerLookupRole.Arn
+      Environment:
+        Variables:
+          USER_POOL_ID: 'us-west-2_XArO8IHUw'
 
   # should add dynamodb table in here at some point
   
@@ -59,22 +71,65 @@ Resources:
         Version: "2012-10-17"
         Statement: 
           -
-            Effect:   Allow
+            Effect: Allow
             Resource:
               - arn:aws:dynamodb:us-west-2:487757292854:table/TicTacToe_GamesTable
               - arn:aws:dynamodb:us-west-2:487757292854:table/TicTacToe_GamesTable/*
             Action:
               - "dynamodb:Query"
 
+  PlayerLookupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/TicTacToe/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: AllowLambdaServiceToAssumeRole
+            Effect: Allow
+            Action: 
+              - sts:AssumeRole
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+
+  PlayerLookupPolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: GameLookupRole
+    Properties:
+      PolicyName: TicTacToePlayerLookupPolicy
+      Roles:
+        - !Ref PlayerLookupRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          -
+            Effect: Allow
+            Resource:
+              - arn:aws:cognito-idp:us-west-2:487757292854:userpool/us-west-2_XArO8IHUw
+            Action:
+              - "cognito-idp:ListUsers"
+
 
   #
   # ---------- Permission ----------
   # Need to manually create Lambda permission for AppSync to invoke the function
   #
-  AppSyncInvokePermission:
+  AppSyncGameInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt GameLookupFunction.Arn
+      Principal: appsync.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+
+  AppSyncPlayerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt PlayerLookupFunction.Arn
       Principal: appsync.amazonaws.com
       SourceAccount: !Sub "${AWS::AccountId}"

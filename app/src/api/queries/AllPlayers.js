@@ -1,6 +1,6 @@
 import gql from 'graphql-tag'
 
-const AllPlayersQuery = gql`
+const PlayersQuery = gql`
   query allPlayers {
     allPlayers {
       players {
@@ -12,4 +12,4 @@ const AllPlayersQuery = gql`
   }
 `
 
-export default AllPlayersQuery
+export default PlayersQuery

@@ -1,0 +1,15 @@
+# DataSource = DynamoDB / TicTacToe_GamesTable
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "GameId": { "S" : "${ctx.arguments.GameId}"}
+    },
+    "update" : {
+    	"expression": "SET StatusDate = :StatusDate",
+        "expressionValues": {
+            ":StatusDate": {  "S": "FINISHED_$util.time.nowFormatted("yyyy-MM-dd HH:mm:ssZ")" }
+        }
+    }
+}

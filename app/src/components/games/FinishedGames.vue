@@ -21,7 +21,7 @@
             <span class="tag is-success is-rounded">WIN</span>
           </td>
           <td>
-            <a class="button is-uppercase is-small is-light">View</a>
+            <a class="button is-uppercase is-small is-light" v-on:click="navigateToGame(game.GameId)">View</a>
           </td>
         </tr>
       </tbody>
@@ -30,60 +30,19 @@
 </template>
 
 <script>
-import { ListCompletedQuery } from '@/api/queries'
-import { mapActions, mapGetters } from 'vuex'
-import moment from 'moment'
+import BaseGames from './BaseGames'
 
 export default {
+  extends: BaseGames,
   name: 'tictactoe-completed-games',
 
-  data () {
-    return {
-      games: []
-    }
-  },
-
-  filters: {
-    since: function (timestamp) {
-      return moment(timestamp, 'X').fromNow()
-    }
-  },
-
-  computed: {
-    ...mapGetters({
-      'username': 'currentUsername'
-    }),
-
-    completeCount: function () {
-      return this.games.length
-    }
-  },
-
-  watch: {
-    completeCount: function (val) {
-      this.setCompleteGameCount(val)
-    }
-  },
-
   methods: {
-    ...mapActions([
-      'setCompleteGameCount'
-    ]),
-
     opponentName: function (game) {
       return game.HostId === this.username ? game.OpponentId : game.HostId
-    }
-  },
+    },
 
-  apollo: {
-    games: {
-      query: ListCompletedQuery,
-      variables () {
-        return {
-          username: this.username
-        }
-      },
-      update: data => data.finished.games
+    navigateToGame: function (gameId) {
+      this.setCurrentGame(gameId)
     }
   }
 }

@@ -1,0 +1,20 @@
+# DataSource = DynamoDB / TicTacToe_GamesTable
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "GameId": { "S" : "${context.arguments.GameId}"}
+    },
+    "update" : {
+        "expression": "SET Game = :Game, Turn = :Turn, UpdateDate = :UpdateDate",
+        "expressionValues": {
+            #set( $Game = $context.arguments.Game )
+            ":Game": $util.dynamodb.toListJson($Game),
+            #set( $Turn = $context.arguments.Turn )
+            ":Turn": $util.dynamodb.toStringJson($Turn),
+            ":UpdateDate": { "S": "${util.time.nowEpochSeconds()}" }
+        }
+    }
+}
+

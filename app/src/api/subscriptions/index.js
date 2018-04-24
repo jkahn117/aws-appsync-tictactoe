@@ -1,7 +1,9 @@
-import OnInvitedSubscription from './OnInvited'
-import OnGameUpdatedSubscription from './OnGameUpdated'
+import OnGameInviteSubscription from './OnGameInvite'
+import OnGamePlaySubscription from './OnGamePlay'
+import OnGameUpdateSubscription from './OnGameUpdate'
 
 export {
-  OnInvitedSubscription,
-  OnGameUpdatedSubscription
+  OnGameInviteSubscription,
+  OnGamePlaySubscription,
+  OnGameUpdateSubscription
 }

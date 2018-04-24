@@ -10,18 +10,10 @@ type Game {
 	UpdateDate: String
 }
 
-type GameConnection {
-	games: [Game]
-	nextToken: String
-}
-
-type Mutation {
-	# Create a new game
-	createGame(HostId: String!, OpponentId: String!): Game
-	# Update the state of game play
-	updateGame(GameId: ID!, Game: [String]!, Turn: String!): Game
-	# Delete a single value of type 'Game' by a primary key.
-	deleteGame(GameId: ID!): Game
+type PlayerGames {
+	Invited: [Game]
+	Active: [Game]
+	Finished: [Game]
 }
 
 type Player {
@@ -34,20 +26,38 @@ type PlayerConnection {
 	nextToken: String
 }
 
+type Mutation {
+	# create a new game by inviting an opponent
+	createGame(OpponentId: String!): Game
+	# start a new game by accepting an invitation
+	startGame(GameId: ID!): Game
+	# player takes turn, marking space with 'X' or 'O', updating game board
+	playGame(GameId: ID!, Turn: String, Game: [String]): Game
+	# finish a game when one player wins or reach a draw
+	finishGame(GameId: ID!): Game
+	# decline an invited game
+	declineGame(GameId: ID!): Game
+}
+
 type Query {
+	# listing of all players available in the game
 	allPlayers(nextToken: String): PlayerConnection
-	invites(username: String!, count: Int, nextToken: String): GameConnection
-	inProgress(username: String!, count: Int, nextToken: String): GameConnection
-	finished(username: String!, count: Int, nextToken: String): GameConnection
+	# listing of all games associated with the given player
+	playerGames(PlayerId: String!): PlayerGames
 	# Get a single value of type 'Game' by primary key.
 	getGame(GameId: ID!): Game
 }
 
 type Subscription {
-	onInvited(OpponentId: String!): Game
+	# when a player is invited to play a game
+	onGameInvite(OpponentId: String!): Game
 		@aws_subscribe(mutations: ["createGame"])
-	onGameUpdated(GameId: ID!): Game
-		@aws_subscribe(mutations: ["updateGame"])
+	# when the status of a game or the player turn updates
+	onGameUpdate(GameId: ID!): Game
+		@aws_subscribe(mutations: ["startGame","playGame","finishGame"])
+	# when a player takes his turn
+	onGamePlay(GameId: ID!): Game
+		@aws_subscribe(mutations: ["playGame"])
 }
 
 schema {

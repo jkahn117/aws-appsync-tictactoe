@@ -28,8 +28,8 @@
 
 <script>
 import { GetGameQuery } from '@/api/queries'
-import { UpdateGameMutation } from '@/api/mutations'
-import { OnGameUpdatedSubscription } from '@/api/subscriptions'
+import { PlayGameMutation } from '@/api/mutations'
+import { OnGamePlaySubscription } from '@/api/subscriptions'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -48,11 +48,15 @@ export default {
     }),
 
     game: function () {
-      if (this.gameDetails && this.gameDetails.hasOwnProperty('Game')) {
+      if (this.gameDetails.hasOwnProperty('Game') && this.gameDetails.Game) {
         return this.gameDetails.Game
       }
 
       return Array.from(Array(9).keys())
+    },
+
+    isMyTurn: function () {
+      return this.gameDetails.Turn === this.username
     },
 
     myMark: function () {
@@ -87,39 +91,43 @@ export default {
     },
 
     chooseSpace: function (spaceIndex) {
+      // TODO: check if game is finished also
+      if (!this.isMyTurn) {
+        return
+      }
+
       let updatedGame = Array.from(this.game)
       updatedGame[spaceIndex] = this.myMark
 
       const newData = {
         gameId: this.gameId,
+        turn: this.opponentName,
         game: updatedGame
       }
 
       if (this.game[spaceIndex] !== 'X' || this.game[spaceIndex] !== 'O') {
         this.$apollo.mutate({
-          mutation: UpdateGameMutation,
+          mutation: PlayGameMutation,
           variables: newData,
-          update: (store, { data: { updateGame } }) => {
+          update: (store, { data: { playGame } }) => {
             const query = {
               query: GetGameQuery,
-              variables: { gameId: updateGame.GameId }
+              variables: { gameId: playGame.GameId }
             }
 
             const data = store.readQuery(query)
-            data.getGame.Game = updateGame.Game
+            data.getGame.Game = playGame.Game
             store.writeQuery({ ...query, data })
           },
           optimisticResponse: {
             __typename: 'Mutation',
-            updateGame: {
+            playGame: {
               __typename: 'Game',
               GameId: this.gameId,
+              Turn: this.opponentName,
               Game: updatedGame
             }
           }
-        }).then((data) => {
-          console.log('update complete!')
-          console.log(data)
         }).catch((error) => {
           console.error(error)
         })
@@ -136,22 +144,22 @@ export default {
           gameId: this.gameId
         }
       },
-      // result ({ data, loader, networkStatus }) {
-      //   console.log(data)
-      // },
+      result ({ data, loader, networkStatus }) {
+        console.log(data)
+      },
       update: data => data.getGame,
       skip () {
         return !this.gameId
       },
       subscribeToMore: {
-        document: OnGameUpdatedSubscription,
+        document: OnGamePlaySubscription,
         variables () {
           return {
             gameId: this.gameId
           }
         },
         updateQuery: (prev, { subscriptionData }) => {
-          let newData = subscriptionData.data.onGameUpdated
+          let newData = subscriptionData.data.onGamePlay
           let updatedGame = Object.assign({}, prev.getGame, newData)
           return {
             getGame: {

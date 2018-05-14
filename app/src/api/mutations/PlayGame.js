@@ -6,6 +6,7 @@ const PlayGameMutation = gql`
       GameId
       Game
       Turn
+      StatusDate
     }
   }
 `

@@ -8,6 +8,8 @@ const StartGameMutation = gql`
       OpponentId
       OPlayer
       Turn
+      StatusDate
+      UpdateDate
       Game
     }
   }

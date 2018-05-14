@@ -93,20 +93,31 @@ export default {
           gameId: gameId
         },
         updateQuery: (previous, { subscriptionData }) => {
-          let activeGames = Object.assign([], previous.playerGames.Active)
-          let gameData = subscriptionData.data.onGameUpdate
+          let game = subscriptionData.data.onGameUpdate
+          let gameIsFinished = game.StatusDate.startsWith('FINISHED')
 
-          const index = activeGames.findIndex(g => g.GameId === gameData.GameId)
-          if (index < 0) {
-            previous.Active.push(gameData)
+          let activeGames = Object.assign([], previous.playerGames.Active)
+          let finishedGames = Object.assign([], previous.playerGames.Finished)
+
+          const index = activeGames.findIndex(g => g.GameId === game.GameId)
+
+          if (index < 0 && !gameIsFinished) {
+            activeGames.push(game)
           } else {
-            const updatedGame = Object.assign({}, activeGames[index], gameData)
-            activeGames[index] = updatedGame
+            const updatedGame = Object.assign({}, activeGames[index], game)
+
+            if (gameIsFinished) {
+              finishedGames.push(updatedGame)
+              activeGames.splice(index, 1)
+            } else {
+              activeGames[index] = updatedGame
+            }
           }
 
           const newPlayerGames = {
             ...previous.playerGames,
-            Active: activeGames
+            Active: activeGames,
+            Finished: finishedGames
           }
 
           return {

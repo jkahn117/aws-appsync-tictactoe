@@ -8,6 +8,8 @@ const GetGameQuery = gql`
       OpponentId
       OPlayer
       Turn
+      StatusDate
+      UpdateDate
       Game
     }
   }

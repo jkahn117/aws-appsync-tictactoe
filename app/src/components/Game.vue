@@ -1,9 +1,19 @@
 <template>
   <div>
-    <p class="title is-3">
-      My Game
-      <span v-if="this.gameDetails.hasOwnProperty('Game')">vs {{ this.opponentName }}</span>
-    </p>
+    <div v-if="this.gameId">
+      <h3 class="title is-3">
+        My Game vs {{ this.opponentName }}
+        <span class="tag is-warning is-rounded" v-if="this.isMyTurn">MY TURN</span>
+      </h3>
+      <h5 class="subtitle is-5">
+        last play: {{ this.gameDetails.UpdateDate | since }} | me: {{ this.myMark }}
+      </h5>
+    </div>
+    <div v-else>
+      <h3 class="title is-3">
+        Start a New Game
+      </h3>
+    </div>
 
     <!-- <div v-if="$apollo.loading">Loading...</div> -->
     <table id="board" v-if="!!this.gameDetails">
@@ -28,9 +38,10 @@
 
 <script>
 import { GetGameQuery } from '@/api/queries'
-import { PlayGameMutation } from '@/api/mutations'
+import { PlayGameMutation, FinishGameMutation } from '@/api/mutations'
 import { OnGamePlaySubscription } from '@/api/subscriptions'
 import { mapGetters } from 'vuex'
+import moment from 'moment'
 
 export default {
   name: 'tictactoe-game',
@@ -59,12 +70,22 @@ export default {
       return this.gameDetails.Turn === this.username
     },
 
+    isFinished: function () {
+      return this.gameDetails.StatusDate.startsWith('FINISHED')
+    },
+
     myMark: function () {
       return this.gameDetails.OPlayer === this.username ? 'O' : 'X'
     },
 
     opponentName: function () {
       return this.gameDetails.HostId === this.username ? this.gameDetails.OpponentId : this.gameDetails.HostId
+    }
+  },
+
+  filters: {
+    since: function (timestamp) {
+      return moment(timestamp, 'X').fromNow()
     }
   },
 
@@ -86,13 +107,8 @@ export default {
       }
     },
 
-    clearGame: function () {
-      // return this.game.filter(s => s !== 'O' && s !== 'X')
-    },
-
     chooseSpace: function (spaceIndex) {
-      // TODO: check if game is finished also
-      if (!this.isMyTurn) {
+      if (!this.isMyTurn || this.isFinished) {
         return
       }
 
@@ -105,6 +121,7 @@ export default {
         game: updatedGame
       }
 
+      // first, mark the space
       if (this.game[spaceIndex] !== 'X' || this.game[spaceIndex] !== 'O') {
         this.$apollo.mutate({
           mutation: PlayGameMutation,
@@ -125,14 +142,45 @@ export default {
               __typename: 'Game',
               GameId: this.gameId,
               Turn: this.opponentName,
-              Game: updatedGame
+              Game: updatedGame,
+              StatusDate: this.gameDetails.StatusDate
             }
           }
         }).catch((error) => {
           console.error(error)
         })
       }
-      // checkForWinner()
+
+      // then check if this is a winner
+      if (this.checkForWinner(this.myMark)) {
+        // show some sort of banner
+        console.log('!!!! WINNER !!!!')
+
+        this.$apollo.mutate({
+          mutation: FinishGameMutation,
+          variables: {
+            gameId: this.gameId
+          },
+          update: (store, { data: { finishGame } }) => {
+            const query = {
+              query: GetGameQuery,
+              variables: { gameId: this.gameId }
+            }
+
+            const data = store.readQuery(query)
+            data.getGame.StatusDate = finishGame.StatusDate
+            store.writeQuery({ ...query, data })
+          },
+          optimisticResponse: {
+            __typename: 'Mutation',
+            finishGame: {
+              __typename: 'Game',
+              GameId: this.gameId,
+              StatusDate: this.gameDetails.StatusDate.replace('IN_PROGRESS', 'FINISHED')
+            }
+          }
+        })
+      }
     }
   },
 
@@ -144,9 +192,9 @@ export default {
           gameId: this.gameId
         }
       },
-      result ({ data, loader, networkStatus }) {
-        console.log(data)
-      },
+      // result ({ data, loader, networkStatus }) {
+      //   console.log(data)
+      // },
       update: data => data.getGame,
       skip () {
         return !this.gameId
@@ -175,6 +223,10 @@ export default {
 </script>
 
 <style scoped>
+  #board {
+    margin-top: 2rem;
+  }
+
   table {
     border-collapse: collapse;
     margin: 0 auto;

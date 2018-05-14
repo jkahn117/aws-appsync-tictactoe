@@ -32,7 +32,7 @@ type Mutation {
 	# start a new game by accepting an invitation
 	startGame(GameId: ID!): Game
 	# player takes turn, marking space with 'X' or 'O', updating game board
-	playGame(GameId: ID!, Turn: String, Game: [String]): Game
+	playGame(GameId: ID!, Turn: String!, Game: [String]!): Game
 	# finish a game when one player wins or reach a draw
 	finishGame(GameId: ID!): Game
 	# decline an invited game

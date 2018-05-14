@@ -5,6 +5,7 @@ const OnGameUpdateSubscription = gql`
     onGameUpdate(GameId: $gameId) {
       GameId
       Turn
+      StatusDate
     }
   }
 `

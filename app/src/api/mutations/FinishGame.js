@@ -4,6 +4,8 @@ const FinishGameMutation = gql`
   mutation finishGame($gameId: ID!) {
     finishGame(GameId: $gameId) {
       GameId
+      StatusDate
+      Turn
     }
   }
 `

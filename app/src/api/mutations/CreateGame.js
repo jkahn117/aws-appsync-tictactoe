@@ -9,6 +9,8 @@ const CreateGameMutation = gql`
       OPlayer
       Turn
       Game
+      StartDate
+      StatusDate
     }
   }
 `
